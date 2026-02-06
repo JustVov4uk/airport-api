@@ -24,6 +24,8 @@ class Ticket(models.Model):
 
     class Meta:
         verbose_name_plural = "tickets"
+        unique_together = ("flight", "row", "seat")
+        ordering = ("seat",)
 
     def __str__(self):
         return f"{self.row}-{self.seat}"
