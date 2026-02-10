@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from airport.models import Airport, Route
-from airport.permissions import IsAdminOrReadOnly
+from config.permissions import IsAdminOrReadOnly
 from airport.serializers import AirportSerializer, RouteSerializer
 
 
