@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
-from  rest_framework.test import APIClient
+from rest_framework.test import APIClient
 from airport.models import Airport
 
 AIRPORT_URL = reverse("airport:airport-list")
@@ -38,7 +38,7 @@ class AuthorizedAirportApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            username="test user",
+            username="test_user",
             password="PASSWORD",
         )
         self.client.force_authenticate(user=self.user)
@@ -90,8 +90,10 @@ class AdminAirportApiTests(TestCase):
             "name": "Kyiv",
             "closest_big_city": "Lviv",
         }
+        airports_before = Airport.objects.count()
         result_request = self.client.post(AIRPORT_URL, payload)
         self.assertEqual(result_request.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(airports_before + 1, Airport.objects.count())
 
     def test_update_airport_admin(self):
         url = airport_detail_url(self.airport)
@@ -101,9 +103,12 @@ class AdminAirportApiTests(TestCase):
         }
         result_request = self.client.put(url, payload)
         self.assertEqual(result_request.status_code, status.HTTP_200_OK)
+        self.airport.refresh_from_db()
+        self.assertEqual(self.airport.name, "London")
+        self.assertEqual(self.airport.closest_big_city, "Paris")
 
     def test_delete_airport_admin(self):
         url = airport_detail_url(self.airport)
         result_request = self.client.delete(url)
         self.assertEqual(result_request.status_code, status.HTTP_204_NO_CONTENT)
-
+        self.assertFalse(Airport.objects.filter(id=self.airport.id).exists())
