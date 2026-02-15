@@ -1,4 +1,7 @@
 from rest_framework import serializers
+
+from airplane.serializers import AirplaneListSerializer
+from airport.serializers import RouteListSerializer
 from flight.models import Crew, Flight
 
 
@@ -14,3 +17,33 @@ class FlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = Flight
         fields = ("id", "route", "airplane", "crew", "departure_time", "arrival_time")
+
+
+class FlightListSerializer(serializers.ModelSerializer):
+    route = RouteListSerializer(read_only=True)
+    airplane = AirplaneListSerializer(read_only=True)
+
+    class Meta:
+        model = Flight
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "departure_time",
+            "arrival_time"
+        )
+
+
+class FlightDetailSerializer(FlightListSerializer):
+    crew = CrewSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Flight
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "crew",
+            "departure_time",
+            "arrival_time",
+        )
