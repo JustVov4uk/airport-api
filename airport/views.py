@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from airport.models import Airport, Route
 from config.permissions import IsAdminOrReadOnly
-from airport.serializers import AirportSerializer, RouteSerializer
+from airport.serializers import AirportSerializer, RouteSerializer, RouteListSerializer
 
 
 class AirportViewSet(viewsets.ModelViewSet):
@@ -14,3 +14,8 @@ class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
     permission_classes = (IsAdminOrReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return RouteListSerializer
+        return RouteSerializer
