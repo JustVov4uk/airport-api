@@ -3,13 +3,12 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
-
 from airport.models import Route, Airport
 
 ROUTE_URL = reverse("airport:route-list")
 
-def route_detail_url(route):
-    return reverse("airport:route-detail", args=[route.id])
+def route_detail_url(route_id):
+    return reverse("airport:route-detail", args=[route_id])
 
 
 class UnauthenticatedRouteApiTests(TestCase):
