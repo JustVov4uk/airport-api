@@ -47,3 +47,15 @@ class FlightDetailSerializer(FlightListSerializer):
             "departure_time",
             "arrival_time",
         )
+
+
+class FlightShortSerializer(FlightListSerializer):
+
+    class Meta:
+        model = Flight
+        fields =(
+            "id",
+            "route",
+            "departure_time",
+            "arrival_time",
+        )
