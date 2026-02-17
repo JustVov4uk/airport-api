@@ -1,8 +1,6 @@
 from django.conf import settings
 from django.db import models
-
 from flight.models import Flight
-
 
 
 class Order(models.Model):
@@ -29,3 +27,26 @@ class Ticket(models.Model):
 
     def __str__(self):
         return f"{self.row}-{self.seat}"
+
+    @staticmethod
+    def validate_ticket_field(value: int, max_value: int, field_name: str, error_to_raise):
+        if not (1 <= value <= max_value):
+            raise error_to_raise(
+                {field_name: f"{field_name} must be in range [1, {max_value}], not {value}"}
+            )
+
+    def clean(self):
+        Ticket.validate_ticket_field(self.seat, self.flight.airplane.seats_in_row, "seat", ValueError)
+        Ticket.validate_ticket_field(self.row, self.flight.airplane.rows, "row", ValueError)
+
+    def save(
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+    ):
+        self.clean()
+        return super(Ticket, self).save(
+            force_insert, force_update, using, update_fields
+        )

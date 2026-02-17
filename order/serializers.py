@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from flight.serializers import FlightShortSerializer
@@ -17,6 +18,22 @@ class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = ("id", "row", "seat", "flight", "order")
+
+    def validate(self, attrs):
+        flight = attrs.get("flight")
+        Ticket.validate_ticket_field(
+            attrs["seat"],
+            flight.airplane.seats_in_row,
+            "seat",
+            serializers.ValidationError
+        )
+        Ticket.validate_ticket_field(
+            attrs["row"],
+            flight.airplane.rows,
+            "row",
+            serializers.ValidationError
+        )
+        return attrs
 
 
 class TicketListSerializer(serializers.ModelSerializer):
