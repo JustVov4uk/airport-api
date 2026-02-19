@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+from django.core.exceptions import ValidationError
+
 from flight.models import Flight
 
 
@@ -36,8 +38,8 @@ class Ticket(models.Model):
             )
 
     def clean(self):
-        Ticket.validate_ticket_field(self.seat, self.flight.airplane.seats_in_row, "seat", ValueError)
-        Ticket.validate_ticket_field(self.row, self.flight.airplane.rows, "row", ValueError)
+        Ticket.validate_ticket_field(self.seat, self.flight.airplane.seats_in_row, "seat", ValidationError)
+        Ticket.validate_ticket_field(self.row, self.flight.airplane.rows, "row", ValidationError)
 
     def save(
         self,

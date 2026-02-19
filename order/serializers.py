@@ -6,18 +6,12 @@ from order.models import Order, Ticket
 from user.serializers import UserSerializer
 
 
-class OrderSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Order
-        fields = ("id", "created_at", "user")
-
-
 class TicketSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ticket
         fields = ("id", "row", "seat", "flight", "order")
+        read_only_fields = ("order",)
 
     def validate(self, attrs):
         flight = attrs.get("flight")
@@ -50,8 +44,24 @@ class TicketListSerializer(serializers.ModelSerializer):
         )
 
 
+class OrderSerializer(serializers.ModelSerializer):
+    tickets = TicketSerializer(many=True)
+
+    class Meta:
+        model = Order
+        fields = ("id", "created_at", "tickets")
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            tickets_data = validated_data.pop("tickets")
+            order = Order.objects.create(**validated_data)
+            for ticket_data in tickets_data:
+                Ticket.objects.create(order=order, **ticket_data)
+            return order
+
+
 class OrderListSerializer(serializers.ModelSerializer):
-    tickets = TicketListSerializer(read_only=True, many=True)
+    tickets = TicketListSerializer(many=True)
     user = UserSerializer(read_only=True)
     class Meta:
         model = Order
