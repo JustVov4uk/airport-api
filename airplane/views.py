@@ -14,6 +14,7 @@ class AirplaneViewSet(viewsets.ModelViewSet):
     queryset = Airplane.objects.all()
     serializer_class = AirplaneSerializer
     permission_classes = (IsAdminOrReadOnly,)
+    filterset_fields = ["airplane_type"]
 
     def get_serializer_class(self):
         if self.action == "list":
