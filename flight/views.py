@@ -38,6 +38,8 @@ class FlightViewSet(viewsets.ModelViewSet):
     serializer_class = FlightSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filterset_class = FlightFilter
+    ordering_fields = ["departure_time", "route__source__name"]
+    ordering = ["departure_time"]
 
 
     def get_serializer_class(self):
