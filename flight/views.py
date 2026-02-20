@@ -1,5 +1,5 @@
 import django_filters
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from config.permissions import IsAdminOrReadOnly
 from flight.models import Crew, Flight
@@ -29,6 +29,8 @@ class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
     permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["first_name", "last_name"]
 
 
 class FlightViewSet(viewsets.ModelViewSet):
