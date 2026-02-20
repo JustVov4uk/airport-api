@@ -11,3 +11,4 @@ platformdirs==4.5.1
 pytokens==0.4.1
 sqlparse==0.5.5
 tzdata==2025.3
+django-filter~=25.2
