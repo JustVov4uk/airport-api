@@ -1,6 +1,9 @@
 import django_filters
+from rest_framework.decorators import action
 from django.db.models import F, Count, ExpressionWrapper, IntegerField
 from rest_framework import viewsets, filters
+from rest_framework.response import Response
+
 from config.permissions import IsAdminOrReadOnly
 from flight.models import Crew, Flight
 from flight.serializers import (CrewSerializer,
@@ -8,6 +11,7 @@ from flight.serializers import (CrewSerializer,
                                 FlightListSerializer,
                                 FlightDetailSerializer
                                 )
+from order.models import Ticket
 
 
 class FlightFilter(django_filters.FilterSet):
@@ -67,3 +71,23 @@ class FlightViewSet(viewsets.ModelViewSet):
             queryset = queryset.select_related("route", "airplane")
 
         return queryset
+
+    @action(
+        methods=["GET"],
+        detail=True,
+        url_path="available-seats",
+    )
+    def available_seats(self, request, pk=None):
+        flight = self.get_object()
+        all_seats = []
+        for row in range(1, flight.airplane.rows + 1):
+            for seat in range(1, flight.airplane.seats_in_row + 1):
+                all_seats.append({"row": row, "seat": seat})
+
+        taken_seats = Ticket.objects.filter(flight=flight).values("row", "seat")
+        taken_seats_set = {(seat["row"], seat["seat"]) for seat in taken_seats}
+        available_sets = []
+        for seat in all_seats:
+            if (seat["row"], seat["seat"]) not in taken_seats_set:
+                available_sets.append(seat)
+        return Response(available_sets)
