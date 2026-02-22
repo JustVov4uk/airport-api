@@ -1,5 +1,7 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from order.models import Order, Ticket
 from order.serializers import OrderSerializer, TicketSerializer, OrderListSerializer, TicketListSerializer
@@ -15,6 +17,16 @@ class OrderViewSet(viewsets.ModelViewSet):
         if user.is_staff:
             return Order.objects.all()
         return Order.objects.filter(user_id=user.id)
+
+    @action(
+        detail=True,
+        methods=["POST"],
+        url_path="cancel"
+    )
+    def cancel(self, request, pk=None):
+        order = self.get_object()
+        order.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
