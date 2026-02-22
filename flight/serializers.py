@@ -22,6 +22,7 @@ class FlightSerializer(serializers.ModelSerializer):
 class FlightListSerializer(serializers.ModelSerializer):
     route = RouteListSerializer(read_only=True)
     airplane = AirplaneListSerializer(read_only=True)
+    available_seats = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Flight
@@ -30,7 +31,8 @@ class FlightListSerializer(serializers.ModelSerializer):
             "route",
             "airplane",
             "departure_time",
-            "arrival_time"
+            "arrival_time",
+            "available_seats",
         )
 
 
