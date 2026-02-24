@@ -63,7 +63,7 @@ class FlightViewSet(viewsets.ModelViewSet):
         queryset = self.queryset
         if self.action == "list":
             queryset = queryset.select_related("route", "airplane").annotate(
-                available_seats = ExpressionWrapper(
+                available_seats=ExpressionWrapper(
                     F("airplane__rows") * F("airplane__seats_in_row") - Count("ticket"),
                     output_field=IntegerField()
                 )
@@ -89,9 +89,6 @@ class FlightViewSet(viewsets.ModelViewSet):
             }
         }
     )
-
-
-
     @action(
         methods=["GET"],
         detail=True,
@@ -111,3 +108,65 @@ class FlightViewSet(viewsets.ModelViewSet):
             if (seat["row"], seat["seat"]) not in taken_seats_set:
                 available_sets.append(seat)
         return Response(available_sets)
+
+    @extend_schema(
+        summary="List all flights",
+        description="""
+        Get a paginated list of all flights with advanced filtering options.
+
+        You can filter by:
+        - Source and destination airport
+        - Departure date range
+        - Availability of seats
+
+        Results are ordered by departure time by default.
+        """,
+        parameters=[
+            OpenApiParameter(
+                name="route__source",
+                description="Filter flights by source airport ID",
+                required=False,
+                type=int
+            ),
+            OpenApiParameter(
+                name="route__destination",
+                description="Filter flights by destination airport ID",
+                required=False,
+                type=int
+            ),
+            OpenApiParameter(
+                name="departure_date_from",
+                description="Filter flights departing on or after this date (format: YYYY-MM-DD)",
+                required=False,
+                type=str
+            ),
+            OpenApiParameter(
+                name="departure_date_to",
+                description="Filter flights departing on or before this date (format: YYYY-MM-DD)",
+                required=False,
+                type=str
+            ),
+            OpenApiParameter(
+                name="has_available_seats",
+                description="Show only flights with available seats (True/False)",
+                required=False,
+                type=bool
+            ),
+            OpenApiParameter(
+                name="ordering",
+                description="Order results by field. Prefix with '-' for descending order (e.g., '-departure_time')",
+                required=False,
+                type=str
+            ),
+            OpenApiParameter(
+                name="page",
+                description="Page number for pagination",
+                required=False,
+                type=int
+            )
+        ]
+    )
+
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
