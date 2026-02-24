@@ -1,4 +1,5 @@
 import django_filters
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework.decorators import action
 from django.db.models import F, Count, ExpressionWrapper, IntegerField
 from rest_framework import viewsets, filters
@@ -71,6 +72,25 @@ class FlightViewSet(viewsets.ModelViewSet):
             queryset = queryset.select_related("route", "airplane")
 
         return queryset
+
+    @extend_schema(
+        summary="Get available seats",
+        description="Return list of available seat coordinates",
+        responses={
+            200: {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "row": {"type": "integer"},
+                        "seat": {"type": "integer"},
+                    }
+                }
+            }
+        }
+    )
+
+
 
     @action(
         methods=["GET"],
