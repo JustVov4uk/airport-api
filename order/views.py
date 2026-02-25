@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -17,6 +18,15 @@ class OrderViewSet(viewsets.ModelViewSet):
         if user.is_staff:
             return Order.objects.all()
         return Order.objects.filter(user_id=user.id)
+
+    @extend_schema(
+        summary="Cancel order",
+        description="Cancel this order and delete all associated tickets. Only the order owner can cancel their order.",
+        request=None,
+        responses={
+            204: None,
+        }
+    )
 
     @action(
         detail=True,
