@@ -43,6 +43,21 @@ class CrewViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ["first_name", "last_name"]
 
+    @extend_schema(
+        summary="List all crew members",
+        description="Get a paginated list of crew members with search by first or last name",
+        parameters=[
+            OpenApiParameter(
+                name="search",
+                description="Search by first name or last name",
+                required=False,
+                type=str
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class FlightViewSet(viewsets.ModelViewSet):
     queryset = Flight.objects.all()
