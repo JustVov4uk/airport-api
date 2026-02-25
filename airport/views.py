@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, filters
 from airport.models import Airport, Route
 from config.permissions import IsAdminOrReadOnly
@@ -10,6 +11,21 @@ class AirportViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ("name", "closest_big_city")
+    
+    @extend_schema(
+        summary="List all airports",
+        description="Get a paginated list of all airports with search by name or closest_big_city",
+        parameters=[
+            OpenApiParameter(
+                name="search",
+                description="Search airports by name or closest_big_city",
+                required=False,
+                type=str,
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class RouteViewSet(viewsets.ModelViewSet):
