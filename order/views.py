@@ -38,6 +38,34 @@ class OrderViewSet(viewsets.ModelViewSet):
         order.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @extend_schema(
+        summary="Create new order",
+        description="Create a new order with tickets. Provide flight ID, row, and seat for each ticket.",
+        request={
+            "application/json":{
+                "example":{
+                    "tickets":[
+                        {
+                            "flight": 1,
+                            "row": 5,
+                            "seat": 2
+                        },
+                        {
+                            "flight": 1,
+                            "row": 5,
+                            "seat": 3
+                        }
+                    ]
+                }
+            }
+        },
+        responses={
+            201: OrderListSerializer
+        }
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
