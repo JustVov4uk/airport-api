@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 
 from airplane.models import Airplane
@@ -18,9 +20,26 @@ class Flight(models.Model):
     crew = models.ManyToManyField(Crew, related_name="flights")
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
+    base_price = models.DecimalField(max_digits=8, decimal_places=2)
 
     class Meta:
         verbose_name_plural = "flights"
 
     def __str__(self):
         return f"{self.route} -> {self.airplane}"
+
+    def get_tickets_price(self):
+        capacity = self.airplane.capacity
+        sold = self.ticket_set.count()
+        if capacity == 0:
+            return self.base_price
+
+        occupancy = sold / capacity
+
+
+        if occupancy <= 0.5:
+            return self.base_price * Decimal("1.0")
+        if occupancy <= 0.8:
+            return self.base_price * Decimal("1.25")
+        else:
+            return self.base_price * Decimal("1.5")

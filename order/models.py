@@ -21,6 +21,7 @@ class Ticket(models.Model):
     seat = models.IntegerField()
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
+    price = models.DecimalField(max_digits=8, decimal_places=2)
 
     class Meta:
         verbose_name_plural = "tickets"
@@ -29,6 +30,7 @@ class Ticket(models.Model):
 
     def __str__(self):
         return f"{self.row}-{self.seat}"
+
 
     @staticmethod
     def validate_ticket_field(value: int, max_value: int, field_name: str, error_to_raise):

@@ -10,8 +10,8 @@ class TicketSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ticket
-        fields = ("id", "row", "seat", "flight", "order")
-        read_only_fields = ("order",)
+        fields = ("id", "row", "seat", "flight", "order", "price")
+        read_only_fields = ("order", "price")
 
     def validate(self, attrs):
         flight = attrs.get("flight")
@@ -40,7 +40,8 @@ class TicketListSerializer(serializers.ModelSerializer):
             "row",
             "seat",
             "flight",
-            "order"
+            "order",
+            "price",
         )
 
 
@@ -56,7 +57,9 @@ class OrderSerializer(serializers.ModelSerializer):
             tickets_data = validated_data.pop("tickets")
             order = Order.objects.create(**validated_data)
             for ticket_data in tickets_data:
-                Ticket.objects.create(order=order, **ticket_data)
+                flight = ticket_data["flight"]
+                price = flight.get_tickets_price()
+                Ticket.objects.create(order=order, price=price, **ticket_data)
             return order
 
 
