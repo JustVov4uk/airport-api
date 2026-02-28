@@ -1,3 +1,5 @@
+from django.utils import timezone
+from datetime import timedelta
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -5,7 +7,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from order.models import Order, Ticket
-from order.serializers import OrderSerializer, TicketSerializer, OrderListSerializer, TicketListSerializer
+from order.serializers import (OrderSerializer,
+                               TicketSerializer,
+                               OrderListSerializer,
+                               TicketListSerializer)
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -35,6 +40,18 @@ class OrderViewSet(viewsets.ModelViewSet):
     )
     def cancel(self, request, pk=None):
         order = self.get_object()
+        earliest_ticket = order.tickets.select_related("flight").order_by("flight__departure_time").first()
+        if not earliest_ticket:
+            order.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        earliest_flight = earliest_ticket.flight
+
+        if earliest_flight.departure_time - timezone.now() < timedelta(hours=24):
+            return Response(
+                {"error": "Cannot cancel order less than 24 hours before departure"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         order.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
