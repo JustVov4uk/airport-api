@@ -77,14 +77,22 @@ class FlightViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = self.queryset
         if self.action == "list":
-            queryset = queryset.select_related("route", "airplane").annotate(
+            queryset = queryset.select_related(
+                "route__source",
+                "route__destination",
+                "airplane__airplane_type",
+            ).annotate(
                 available_seats=ExpressionWrapper(
                     F("airplane__rows") * F("airplane__seats_in_row") - Count("ticket"),
                     output_field=IntegerField()
                 )
             )
         if self.action == "retrieve":
-            queryset = queryset.select_related("route", "airplane")
+            queryset = queryset.select_related(
+                "route__source",
+                "route__destination",
+                "airplane__airplane_type"
+            ).prefetch_related("crew")
 
         return queryset
 

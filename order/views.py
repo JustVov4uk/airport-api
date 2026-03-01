@@ -22,8 +22,13 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_staff:
-            return Order.objects.all()
-        return Order.objects.filter(user_id=user.id)
+            queryset = Order.objects.all()
+        else:
+            queryset = Order.objects.filter(user_id=user.id)
+        return queryset.prefetch_related(
+            "tickets__flight__route__source",
+            "tickets__flight__route__destination",
+        ).select_related("user")
 
     @extend_schema(
         summary="Cancel order",
@@ -102,8 +107,13 @@ class TicketViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_staff:
-            return Ticket.objects.all()
-        return Ticket.objects.filter(order__user=user.id)
+            queryset = Ticket.objects.all()
+        else:
+            queryset = Ticket.objects.filter(order__user=user.id)
+        return queryset.select_related(
+            "flight__route__source",
+            "flight__route__destination",
+        )
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
