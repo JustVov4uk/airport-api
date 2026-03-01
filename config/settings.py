@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     "corsheaders",
+    "debug_toolbar",
     "config",
     "airport",
     "airplane",
@@ -77,8 +78,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -149,6 +151,10 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
 
 AUTH_USER_MODEL = "user.User"
 
