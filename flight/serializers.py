@@ -33,6 +33,7 @@ class FlightListSerializer(serializers.ModelSerializer):
             "departure_time",
             "arrival_time",
             "available_seats",
+            "base_price",
         )
 
 
@@ -48,6 +49,8 @@ class FlightDetailSerializer(FlightListSerializer):
             "crew",
             "departure_time",
             "arrival_time",
+            "available_seats",
+            "base_price"
         )
 
 

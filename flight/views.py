@@ -83,7 +83,7 @@ class FlightViewSet(viewsets.ModelViewSet):
                 "airplane__airplane_type",
             ).annotate(
                 available_seats=ExpressionWrapper(
-                    F("airplane__rows") * F("airplane__seats_in_row") - Count("ticket"),
+                    F("airplane__rows") * F("airplane__seats_in_row") - Count("tickets"),
                     output_field=IntegerField()
                 )
             )
