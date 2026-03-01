@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from airplane.models import Airplane
@@ -15,8 +16,8 @@ class Crew(models.Model):
 
 
 class Flight(models.Model):
-    route = models.ForeignKey(Route, on_delete=models.CASCADE)
-    airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE)
+    route = models.ForeignKey(Route, on_delete=models.PROTECT)
+    airplane = models.ForeignKey(Airplane, on_delete=models.PROTECT)
     crew = models.ManyToManyField(Crew, related_name="flights")
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
@@ -30,7 +31,7 @@ class Flight(models.Model):
 
     def get_tickets_price(self):
         capacity = self.airplane.capacity
-        sold = self.ticket_set.count()
+        sold = self.tickets.count()
         if capacity == 0:
             return self.base_price
 
@@ -43,3 +44,19 @@ class Flight(models.Model):
             return self.base_price * Decimal("1.25")
         else:
             return self.base_price * Decimal("1.5")
+
+    def clean(self):
+        if self.departure_time >= self.arrival_time:
+            raise ValidationError("Departure time must be before arrival time")
+
+    def save(
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+    ):
+        self.clean()
+        return super(Flight, self).save(
+            force_insert, force_update, using, update_fields
+        )
