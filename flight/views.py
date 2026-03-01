@@ -3,8 +3,8 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework.decorators import action
 from django.db.models import F, Count, ExpressionWrapper, IntegerField
 from rest_framework import viewsets, filters
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
-
 from config.permissions import IsAdminOrReadOnly
 from flight.models import Crew, Flight
 from flight.serializers import (CrewSerializer,
@@ -193,3 +193,20 @@ class FlightViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    @action(
+        methods=["GET"],
+        detail=True,
+        url_path="occupancy",
+        permission_classes=[IsAdminUser]
+    )
+
+    def occupancy(self, request, pk=None):
+        flight = self.get_object()
+        if flight.airplane.capacity == 0:
+            return Response({"occupancy": 0})
+
+        sold = Ticket.objects.filter(flight=flight).count()
+        capacity = flight.airplane.capacity
+        occupancy = (sold / capacity) * 100
+        return Response({"occupancy": occupancy})
