@@ -1,4 +1,6 @@
+from django.core.validators import MinValueValidator
 from django.db import models
+from django.core.exceptions import ValidationError
 
 
 class Airport(models.Model):
@@ -14,9 +16,9 @@ class Airport(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="routes_from")
-    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="routes_to")
-    distance = models.IntegerField()
+    source = models.ForeignKey(Airport, on_delete=models.PROTECT, related_name="routes_from")
+    destination = models.ForeignKey(Airport, on_delete=models.PROTECT, related_name="routes_to")
+    distance = models.PositiveIntegerField(validators=[MinValueValidator(1)])
 
 
     class Meta:
@@ -24,3 +26,21 @@ class Route(models.Model):
 
     def __str__(self):
         return f"{self.source} -> {self.destination} ({self.distance})"
+
+    def clean(self):
+        if self.source == self.destination:
+            raise ValidationError(
+                "Source is not destination"
+            )
+
+    def save(
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+    ):
+        self.clean()
+        return super(Route, self).save(
+            force_insert, force_update, using, update_fields
+        )
