@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.core.exceptions import ValidationError
 
@@ -17,8 +18,8 @@ class Order(models.Model):
 
 
 class Ticket(models.Model):
-    row = models.IntegerField()
-    seat = models.IntegerField()
+    row = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    seat = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE, related_name="tickets")
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
     price = models.DecimalField(max_digits=8, decimal_places=2)
