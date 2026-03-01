@@ -103,6 +103,9 @@ TEMPLATES = [
     },
 ]
 
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "airport@gmail.com"
+
 WSGI_APPLICATION = "config.wsgi.application"
 
 

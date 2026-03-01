@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from order.email import send_order_confirmation
 from order.models import Order, Ticket
 from order.serializers import (OrderSerializer,
                                TicketSerializer,
@@ -84,7 +85,8 @@ class OrderViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        order = serializer.save(user=self.request.user)
+        send_order_confirmation(order)
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
