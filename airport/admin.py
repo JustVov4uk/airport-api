@@ -1,11 +1,21 @@
 from django.contrib import admin
 
-from airport.models import Airport, Route
+from airport.models import Airport, Route, Country, City
+
+
+@admin.register(Country)
+class CountryAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+
+
+@admin.register(City)
+class CityAdmin(admin.ModelAdmin):
+    list_display = ("name", "country")
 
 
 @admin.register(Airport)
 class AirportAdmin(admin.ModelAdmin):
-    list_display = ("name", "closest_big_city")
+    list_display = ("name", "city")
 
 
 @admin.register(Route)

@@ -3,10 +3,30 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 
+class Country(models.Model):
+    name = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name_plural = "countries"
+
+    def __str__(self):
+        return self.name
+
+
+class City(models.Model):
+    name = models.CharField(max_length=255)
+    country = models.ForeignKey(Country, on_delete=models.PROTECT)
+
+    class Meta:
+        verbose_name_plural = "cities"
+
+    def __str__(self):
+        return self.name
+
+
 class Airport(models.Model):
     name = models.CharField(max_length=255)
-    closest_big_city = models.CharField(max_length=255)
-
+    city = models.ForeignKey(City, on_delete=models.PROTECT)
 
     class Meta:
         verbose_name_plural = "airports"
