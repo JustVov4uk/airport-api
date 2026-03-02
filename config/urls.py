@@ -20,6 +20,8 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from flight.statistics import statistics_view
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/airport/", include("airport.urls", namespace="airport")),
@@ -38,5 +40,6 @@ urlpatterns = [
         "api/doc/redoc/",
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
-    )
+    ),
+    path("api/statistics/", statistics_view ,name="statistics"),
 ] + debug_toolbar_urls()
