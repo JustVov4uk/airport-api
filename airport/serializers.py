@@ -1,12 +1,34 @@
 from rest_framework import serializers
-from airport.models import Airport, Route
+from airport.models import Airport, Route, Country, City
+
+
+class CountrySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Country
+        fields = ("id", "name")
+
+class CitySerializer(serializers.ModelSerializer):
+    country = CountrySerializer()
+
+    class Meta:
+        model = City
+        fields = ("id", "name", "country")
 
 
 class AirportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Airport
-        fields = ("id", "name", "closest_big_city")
+        fields = ("id", "name", "city")
+
+
+class AirportListSerializer(serializers.ModelSerializer):
+    city = CitySerializer()
+
+    class Meta:
+        model = Airport
+        fields = ("id", "name", "city")
 
 
 class RouteSerializer(serializers.ModelSerializer):
@@ -17,8 +39,8 @@ class RouteSerializer(serializers.ModelSerializer):
 
 
 class RouteListSerializer(serializers.ModelSerializer):
-    source = AirportSerializer()
-    destination = AirportSerializer()
+    source = AirportListSerializer()
+    destination = AirportListSerializer()
 
     class Meta:
         model = Route

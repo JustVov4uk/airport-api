@@ -2,7 +2,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, filters
 from airport.models import Airport, Route
 from config.permissions import IsAdminOrReadOnly
-from airport.serializers import AirportSerializer, RouteSerializer, RouteListSerializer
+from airport.serializers import AirportSerializer, RouteSerializer, RouteListSerializer, AirportListSerializer
 
 
 class AirportViewSet(viewsets.ModelViewSet):
@@ -10,7 +10,17 @@ class AirportViewSet(viewsets.ModelViewSet):
     serializer_class = AirportSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ("name", "closest_big_city")
+    search_fields = ("name", "city__name")
+
+    def get_serializer_class(self):
+        if self.action in ["list", "retrieve"]:
+            return AirportListSerializer
+        return AirportSerializer
+
+    def get_queryset(self):
+        return Airport.objects.select_related("city__country")
+
+
     
     @extend_schema(
         summary="List all airports",
@@ -34,7 +44,10 @@ class RouteViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
 
     def get_queryset(self):
-        return Route.objects.select_related("source", "destination")
+        return Route.objects.select_related(
+            "source__city__country",
+            "destination__city__country",
+        )
 
     def get_serializer_class(self):
         if self.action == "list":
