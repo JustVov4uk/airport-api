@@ -23,6 +23,20 @@ class Flight(models.Model):
     arrival_time = models.DateTimeField()
     base_price = models.DecimalField(max_digits=8, decimal_places=2)
 
+    class Status(models.TextChoices):
+        SCHEDULED = "scheduled", "Scheduled"
+        BOARDING = "boarding", "Boarding"
+        DEPARTED = "departed", "Departed"
+        ARRIVED = "arrived", "Arrived"
+        CANCELLED = "cancelled", "Cancelled"
+        DELAYED = "delayed", "Delayed"
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.SCHEDULED,
+    )
+
     class Meta:
         verbose_name_plural = "flights"
 
