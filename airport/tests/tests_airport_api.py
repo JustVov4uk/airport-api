@@ -105,7 +105,7 @@ class AdminAirportApiTests(TestCase):
         self.assertEqual(result_request.status_code, status.HTTP_200_OK)
         self.airport.refresh_from_db()
         self.assertEqual(self.airport.name, "London")
-        self.assertEqual(self.airport.closest_big_city, "Paris")
+        self.assertEqual(self.airport.city, "Paris")
 
     def test_delete_airport_admin(self):
         url = airport_detail_url(self.airport)
