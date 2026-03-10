@@ -32,8 +32,8 @@ class UnauthenticatedAirplaneTypeAPITest(TestCase):
         payload = {
             "name": "Airbus",
         }
-        response = self.client.post(AIRPLANE_TYPE_URL, payload)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        result_request = self.client.post(AIRPLANE_TYPE_URL, payload)
+        self.assertEqual(result_request.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class AuthorizedAirplaneTypeAPITest(TestCase):
@@ -52,5 +52,43 @@ class AuthorizedAirplaneTypeAPITest(TestCase):
         payload = {
             "name": "Airbus",
         }
-        response = self.client.post(AIRPLANE_TYPE_URL, payload)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        result_request = self.client.post(AIRPLANE_TYPE_URL, payload)
+        self.assertEqual(result_request.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class AdminAirplaneTypeAPITest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            email="EMAIL",
+            password="PASSWORD",
+            is_staff=True,
+        )
+        self.client.force_authenticate(user=self.user)
+        self.airplane_type = AirplaneType.objects.create(name="Airbus")
+
+
+    def test_create_airplane_type_admin(self):
+        payload = {
+            "name": "Airbus",
+        }
+        airplane_type_before = AirplaneType.objects.count()
+        result_request = self.client.post(AIRPLANE_TYPE_URL, payload)
+        self.assertEqual(result_request.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(airplane_type_before + 1, AirplaneType.objects.count())
+
+    def test_update_airplane_type_admin(self):
+        url = airplane_type_detail_url(self.airplane_type)
+        payload = {
+            "name": "Boeing",
+        }
+        result_request = self.client.put(url, payload)
+        self.assertEqual(result_request.status_code, status.HTTP_200_OK)
+        self.airplane_type.refresh_from_db()
+        self.assertEqual(self.airplane_type.name, "Boeing")
+
+    def test_delete_airplane_type_admin(self):
+        url = airplane_type_detail_url(self.airplane_type)
+        result_request = self.client.delete(url)
+        self.assertEqual(result_request.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(AirplaneType.objects.filter(id=self.airplane_type.id).exists())
