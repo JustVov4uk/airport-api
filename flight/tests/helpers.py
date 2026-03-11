@@ -1,15 +1,29 @@
 import datetime
 
 from airplane.models import AirplaneType, Airplane
-from airport.models import Airport, Route
+from airport.models import Country, City, Airport, Route
 from flight.models import Crew, Flight
-from order.models import Ticket, Order
 
+
+def create_country(**kwargs):
+    defaults = {
+        "name": "Ukraine",
+    }
+    defaults.update(kwargs)
+    return Country.objects.create(**defaults)
+
+def create_city(**kwargs):
+    defaults = {
+        "name": "Kyiv",
+        "country": create_country(),
+    }
+    defaults.update(kwargs)
+    return City.objects.create(**defaults)
 
 def create_airport(**kwargs):
     defaults = {
-        "name": "Kyiv",
-        "city": "Lviv"
+        "name": "Boryspil",
+        "city": create_city()
     }
     defaults.update(kwargs)
     return Airport.objects.create(**defaults)
@@ -17,7 +31,7 @@ def create_airport(**kwargs):
 def create_route(**kwargs):
     defaults = {
         "source": create_airport(),
-        "destination": create_airport(name="Lviv", city="Kyiv"),
+        "destination": create_airport(name="Lviv"),
         "distance": 600,
     }
     defaults.update(kwargs)
@@ -58,18 +72,3 @@ def create_flight(**kwargs):
     }
     defaults.update(kwargs)
     return Flight.objects.create(**defaults)
-
-def create_order(**kwargs):
-    defaults = {}
-    defaults.update(kwargs)
-    return Order.objects.create(**defaults)
-
-def create_ticket(**kwargs):
-    defaults = {
-        "row": 2,
-        "seat": 5,
-        "flight": create_flight(),
-        "order": create_order(),
-    }
-    defaults.update(kwargs)
-    return Ticket.objects.create(**defaults)

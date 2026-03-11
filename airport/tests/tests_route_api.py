@@ -3,24 +3,26 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
-from airport.models import Route, Airport
+from airport.models import Route, Airport, Country, City
 
 ROUTE_URL = reverse("airport:route-list")
 
-def route_detail_url(route_id):
-    return reverse("airport:route-detail", args=[route_id])
+def route_detail_url(route):
+    return reverse("airport:route-detail", args=[route.id])
 
 
 class UnauthenticatedRouteApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
+        self.country = Country.objects.create(name="Ukraine")
+        self.city = City.objects.create(name="Kyiv", country=self.country)
         self.airport = Airport.objects.create(
             name="Kyiv",
-            closest_big_city="Lviv",
+            city=self.city,
         )
         self.destination = Airport.objects.create(
             name="Lviv",
-            closest_big_city="Kyiv",
+            city=self.city,
         )
         self.route = Route.objects.create(
             source=self.airport,
@@ -51,17 +53,19 @@ class AuthorizedRouteApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            username="test_user",
+            email="EMAIL",
             password="PASSWORD"
         )
         self.client.force_authenticate(user=self.user)
+        self.country = Country.objects.create(name="Ukraine")
+        self.city = City.objects.create(name="Kyiv", country=self.country)
         self.airport = Airport.objects.create(
             name="Kyiv",
-            closest_big_city="Lviv",
+            city=self.city,
         )
         self.destination = Airport.objects.create(
             name="Lviv",
-            closest_big_city="Kyiv",
+            city=self.city,
         )
         self.route = Route.objects.create(
             source=self.airport,
@@ -92,18 +96,20 @@ class AdminRouteApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            username="test_user",
+            email="EMAIL",
             password="PASSWORD",
             is_staff=True,
         )
         self.client.force_authenticate(user=self.user)
+        self.country = Country.objects.create(name="Ukraine")
+        self.city = City.objects.create(name="Kyiv", country=self.country)
         self.airport = Airport.objects.create(
             name="Kyiv",
-            closest_big_city="Lviv",
+            city=self.city,
         )
         self.destination = Airport.objects.create(
             name="Lviv",
-            closest_big_city="Kyiv",
+            city=self.city,
         )
         self.route = Route.objects.create(
             source=self.airport,
@@ -127,11 +133,11 @@ class AdminRouteApiTests(TestCase):
     def test_update_route_admin(self):
         new_source = Airport.objects.create(
             name="London",
-            closest_big_city="Paris",
+            city=self.city,
         )
         new_destination = Airport.objects.create(
             name="Paris",
-            closest_big_city="London",
+            city=self.city,
         )
         url = route_detail_url(self.route)
         payload = {
