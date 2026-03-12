@@ -63,12 +63,16 @@ def create_crew(**kwargs):
     return Crew.objects.create(**defaults)
 
 def create_flight(**kwargs):
+    crew = kwargs.pop("crew", None)
     defaults = {
         "route": create_route(),
         "airplane": create_airplane(),
-        "crew": create_crew(),
-        "departure_time": datetime.time(10, 00),
-        "arrival_time": datetime.time(12, 00),
+        "departure_time": datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc),
+        "arrival_time": datetime.datetime(2026, 6, 1, 12, 0, tzinfo=datetime.timezone.utc),
+        "base_price": 100,
     }
     defaults.update(kwargs)
-    return Flight.objects.create(**defaults)
+    flight = Flight.objects.create(**defaults)
+    if crew:
+        flight.crew.add(crew)
+    return flight
