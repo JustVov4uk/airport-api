@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
@@ -33,3 +34,24 @@ class UnauthenticatedFlightApiTests(TestCase):
         }
         result_request = self.client.post(FLIGHT_URL, payload)
         self.assertEqual(result_request.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class AuthorizedFlightApiTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            email="EMAIL",
+            password="PASSWORD",
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_flight_authorized_forbidden(self):
+        payload = {
+            "route": create_route().id,
+            "airplane": create_airplane().id,
+            "departure_time": "2026-06-01T10:00:00Z",
+            "arrival_time": "2026-06-01T12:00:00Z",
+            "base_price": "100.00"
+        }
+        result_request = self.client.post(FLIGHT_URL, payload)
+        self.assertEqual(result_request.status_code, status.HTTP_403_FORBIDDEN)
