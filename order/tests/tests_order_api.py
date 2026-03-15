@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
+from flight.tests.helpers import create_flight
 from order.models import Order
 
 ORDER_URL = reverse("order:order-list")
@@ -26,20 +27,28 @@ class AuthorizedOrderApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user1 = get_user_model().objects.create_user(
-            username="test_user",
+            email="EMAIL",
             password="PASSWORD",
         )
         self.user2 = get_user_model().objects.create_user(
-            username="test_user2",
+            email="EMAIL2",
             password="PASSWORD",
         )
 
     def test_create_order_authorized(self):
         self.client.force_authenticate(user=self.user1)
+        flight = create_flight()
         payload = {
-            "user": self.user1.id,
+            "tickets": [
+                {
+                    "flight": flight.id,
+                    "row": 1,
+                    "seat": 1
+                }
+            ]
         }
-        result = self.client.post(ORDER_URL, payload)
+        result = self.client.post(ORDER_URL, payload, format="json")
+        print(result.data)
         self.assertEqual(result.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Order.objects.filter(user=self.user1).exists())
 
@@ -49,9 +58,8 @@ class AuthorizedOrderApiTests(TestCase):
 
         self.client.force_authenticate(user=self.user1)
         result = self.client.get(ORDER_URL)
-
         self.assertEqual(result.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(result.data), 1)
+        self.assertEqual(len(result.data["results"]), 1)
 
     def test_retrieve_order_other_user_forbidden(self):
         order_user1 = Order.objects.create(user=self.user1)
@@ -68,15 +76,15 @@ class AdminOrderApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user1 = get_user_model().objects.create_user(
-            username="test_user",
+            email="EMAIL",
             password="PASSWORD",
         )
         self.user2 = get_user_model().objects.create_user(
-            username="test_user2",
+            email="EMAIL2",
             password="PASSWORD",
         )
         self.admin = get_user_model().objects.create_user(
-            username="admin",
+            email="admin",
             password="PASSWORD",
             is_staff=True,
         )
@@ -89,4 +97,4 @@ class AdminOrderApiTests(TestCase):
         result = self.client.get(ORDER_URL)
 
         self.assertEqual(result.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(result.data), 2)
+        self.assertEqual(len(result.data["results"]), 2)

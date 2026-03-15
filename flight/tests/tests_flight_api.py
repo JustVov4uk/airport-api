@@ -149,7 +149,7 @@ class FlightFilterApiTests(TestCase):
                 2026, 6, 1, 12, 0, tzinfo=datetime.timezone.utc
             )
         )
-        result_request = self.client.get(FLIGHT_URL, {"departure_date_from": "2026-01-01"})
+        result_request = self.client.get(FLIGHT_URL, {"departure_date_from": "2025-12-31"})
         ids = [item["id"] for item in result_request.data["results"]]
         self.assertIn(future_flight.id, ids)
         self.assertNotIn(past_flight.id, ids)
@@ -157,10 +157,10 @@ class FlightFilterApiTests(TestCase):
     def test_filter_flights_by_departure_date_to(self):
         past_flight = create_flight(
             departure_time=datetime.datetime(
-                2025, 6, 1, 10, 0, tzinfo=datetime.timezone.utc
+                2025, 1, 1, 10, 0, tzinfo=datetime.timezone.utc
             ),
             arrival_time=datetime.datetime(
-                2025, 6, 1, 12, 0, tzinfo=datetime.timezone.utc
+                2025, 1, 1, 12, 0, tzinfo=datetime.timezone.utc
             )
         )
         future_flight = create_flight(
@@ -171,10 +171,12 @@ class FlightFilterApiTests(TestCase):
                 2025, 6, 1, 12, 0, tzinfo=datetime.timezone.utc
             )
         )
-        result_request = self.client.get(FLIGHT_URL, {"departure_date_to": "2026-01-01"})
+        result_request = self.client.get(FLIGHT_URL, {"departure_date_to": "2025-02-01"})
         ids = [item["id"] for item in result_request.data["results"]]
         self.assertIn(past_flight.id, ids)
         self.assertNotIn(future_flight.id, ids)
+        self.assertNotIn(self.flight1.id, ids)
+        self.assertNotIn(self.flight2.id, ids)
 
     def test_filter_has_available_seats(self):
         full_airplane = create_airplane(rows=1, seats_in_row=1)
