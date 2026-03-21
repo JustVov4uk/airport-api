@@ -1,10 +1,12 @@
 import datetime
-from django.utils import timezone
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
+
 from flight.tests.helpers import create_flight
 from order.models import Order, Ticket
 
@@ -29,8 +31,12 @@ class OrderCancelApiTests(TestCase):
 
     def test_cancel_order_more_than_24h_before_departure(self):
         flight = create_flight(
-            departure_time = datetime.datetime(2027, 1, 1, 10, 0, tzinfo=datetime.timezone.utc),
-            arrival_time = datetime.datetime(2027, 1, 1, 12, 0, tzinfo=datetime.timezone.utc),
+            departure_time=datetime.datetime(
+                2027, 1, 1, 10, 0, tzinfo=datetime.timezone.utc
+            ),
+            arrival_time=datetime.datetime(
+                2027, 1, 1, 12, 0, tzinfo=datetime.timezone.utc
+            ),
         )
         order = Order.objects.create(user=self.user)
         Ticket.objects.create(flight=flight, order=order, row=1, seat=1, price=100)

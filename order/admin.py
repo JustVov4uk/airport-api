@@ -1,6 +1,5 @@
 from django.contrib import admin
 
-from flight.models import Flight
 from order.models import Order, Ticket
 
 

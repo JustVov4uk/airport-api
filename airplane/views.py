@@ -1,11 +1,15 @@
-from rest_framework import viewsets, status
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-from airplane.models import AirplaneType, Airplane
-from airplane.serializers import AirplaneTypeSerializer, AirplaneSerializer, AirplaneListSerializer, \
-    AirplaneImageSerializer
+from airplane.models import Airplane, AirplaneType
+from airplane.serializers import (
+    AirplaneImageSerializer,
+    AirplaneListSerializer,
+    AirplaneSerializer,
+    AirplaneTypeSerializer,
+)
 from config.permissions import IsAdminOrReadOnly
 
 

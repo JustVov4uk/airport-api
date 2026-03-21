@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from airport.models import Airport, Route, Country, City
+from airport.models import Airport, City, Country, Route
 
 
 @admin.register(Country)

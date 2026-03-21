@@ -14,9 +14,11 @@ def statistics_view(request):
     total_tickets = Ticket.objects.all().count()
     total_passengers = Order.objects.values("user").distinct().count()
 
-    return Response ({
-        "total_flights": total_flights,
-        "total_orders": total_orders,
-        "total_tickets": total_tickets,
-        "total_passengers": total_passengers,
-    })
+    return Response(
+        {
+            "total_flights": total_flights,
+            "total_orders": total_orders,
+            "total_tickets": total_tickets,
+            "total_passengers": total_passengers,
+        }
+    )

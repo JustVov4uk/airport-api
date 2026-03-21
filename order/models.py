@@ -1,7 +1,7 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.core.exceptions import ValidationError
 
 from flight.models import Flight
 
@@ -32,17 +32,24 @@ class Ticket(models.Model):
     def __str__(self):
         return f"{self.row}-{self.seat}"
 
-
     @staticmethod
-    def validate_ticket_field(value: int, max_value: int, field_name: str, error_to_raise):
+    def validate_ticket_field(
+        value: int, max_value: int, field_name: str, error_to_raise
+    ):
         if not (1 <= value <= max_value):
             raise error_to_raise(
-                {field_name: f"{field_name} must be in range [1, {max_value}], not {value}"}
+                {
+                    field_name: f"{field_name} must be in range [1, {max_value}], not {value}"
+                }
             )
 
     def clean(self):
-        Ticket.validate_ticket_field(self.seat, self.flight.airplane.seats_in_row, "seat", ValidationError)
-        Ticket.validate_ticket_field(self.row, self.flight.airplane.rows, "row", ValidationError)
+        Ticket.validate_ticket_field(
+            self.seat, self.flight.airplane.seats_in_row, "seat", ValidationError
+        )
+        Ticket.validate_ticket_field(
+            self.row, self.flight.airplane.rows, "row", ValidationError
+        )
 
     def save(
         self,

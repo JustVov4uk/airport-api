@@ -3,9 +3,11 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
-from airport.models import Route, Airport, Country, City
+
+from airport.models import Airport, City, Country, Route
 
 ROUTE_URL = reverse("airport:route-list")
+
 
 def route_detail_url(route):
     return reverse("airport:route-detail", args=[route.id])
@@ -25,9 +27,7 @@ class UnauthenticatedRouteApiTests(TestCase):
             city=self.city,
         )
         self.route = Route.objects.create(
-            source=self.airport,
-            destination=self.destination,
-            distance=600
+            source=self.airport, destination=self.destination, distance=600
         )
 
     def test_list_routes_anonymous(self):
@@ -41,9 +41,9 @@ class UnauthenticatedRouteApiTests(TestCase):
 
     def test_create_route_anonymous_forbidden(self):
         payload = {
-            "source":self.airport.id,
-            "destination":self.destination.id,
-            "distance":600
+            "source": self.airport.id,
+            "destination": self.destination.id,
+            "distance": 600,
         }
         result_request = self.client.post(ROUTE_URL, payload)
         self.assertEqual(result_request.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -53,8 +53,7 @@ class AuthorizedRouteApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            email="EMAIL",
-            password="PASSWORD"
+            email="EMAIL", password="PASSWORD"
         )
         self.client.force_authenticate(user=self.user)
         self.country = Country.objects.create(name="Ukraine")
@@ -68,9 +67,7 @@ class AuthorizedRouteApiTests(TestCase):
             city=self.city,
         )
         self.route = Route.objects.create(
-            source=self.airport,
-            destination=self.destination,
-            distance=600
+            source=self.airport, destination=self.destination, distance=600
         )
 
     def test_list_routes_authenticated(self):
@@ -84,9 +81,9 @@ class AuthorizedRouteApiTests(TestCase):
 
     def test_create_route_authenticated_forbidden(self):
         payload = {
-            "source":self.airport.id,
-            "destination":self.destination.id,
-            "distance":600
+            "source": self.airport.id,
+            "destination": self.destination.id,
+            "distance": 600,
         }
         result_request = self.client.post(ROUTE_URL, payload)
         self.assertEqual(result_request.status_code, status.HTTP_403_FORBIDDEN)
@@ -112,23 +109,22 @@ class AdminRouteApiTests(TestCase):
             city=self.city,
         )
         self.route = Route.objects.create(
-            source=self.airport,
-            destination=self.destination,
-            distance=600
+            source=self.airport, destination=self.destination, distance=600
         )
+
     def test_create_route_admin(self):
         payload = {
-            "source":self.airport.id,
-            "destination":self.destination.id,
-            "distance":600
+            "source": self.airport.id,
+            "destination": self.destination.id,
+            "distance": 600,
         }
         result_request = self.client.post(ROUTE_URL, payload)
         self.assertEqual(result_request.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(Route.objects.filter(
-            source=self.airport,
-            destination=self.destination,
-            distance=600
-        ).exists())
+        self.assertTrue(
+            Route.objects.filter(
+                source=self.airport, destination=self.destination, distance=600
+            ).exists()
+        )
 
     def test_update_route_admin(self):
         new_source = Airport.objects.create(
@@ -143,7 +139,7 @@ class AdminRouteApiTests(TestCase):
         payload = {
             "source": new_source.id,
             "destination": new_destination.id,
-            "distance": 800
+            "distance": 800,
         }
         result_request = self.client.put(url, payload)
         self.assertEqual(result_request.status_code, status.HTTP_200_OK)
@@ -151,7 +147,6 @@ class AdminRouteApiTests(TestCase):
         self.assertEqual(self.route.source.id, new_source.id)
         self.assertEqual(self.route.destination.id, new_destination.id)
         self.assertEqual(self.route.distance, 800)
-
 
     def test_delete_route_admin(self):
         url = route_detail_url(self.route)

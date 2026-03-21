@@ -9,6 +9,7 @@ from order.models import Order
 
 ORDER_URL = reverse("order:order-list")
 
+
 def order_detail_url(order_id):
     return reverse("order:order-detail", args=[order_id])
 
@@ -38,15 +39,7 @@ class AuthorizedOrderApiTests(TestCase):
     def test_create_order_authorized(self):
         self.client.force_authenticate(user=self.user1)
         flight = create_flight()
-        payload = {
-            "tickets": [
-                {
-                    "flight": flight.id,
-                    "row": 1,
-                    "seat": 1
-                }
-            ]
-        }
+        payload = {"tickets": [{"flight": flight.id, "row": 1, "seat": 1}]}
         result = self.client.post(ORDER_URL, payload, format="json")
         print(result.data)
         self.assertEqual(result.status_code, status.HTTP_201_CREATED)
@@ -62,7 +55,6 @@ class AuthorizedOrderApiTests(TestCase):
         self.assertEqual(len(result.data["results"]), 1)
 
     def test_retrieve_order_other_user_forbidden(self):
-        order_user1 = Order.objects.create(user=self.user1)
         order_user2 = Order.objects.create(user=self.user2)
 
         self.client.force_authenticate(user=self.user1)

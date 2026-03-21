@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from airport.models import Airport, Route, Country, City
+
+from airport.models import Airport, City, Country, Route
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -7,6 +8,7 @@ class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
         fields = ("id", "name")
+
 
 class CitySerializer(serializers.ModelSerializer):
     country = CountrySerializer()
@@ -44,9 +46,4 @@ class RouteListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Route
-        fields = (
-            "id",
-            "source",
-            "destination",
-            "distance"
-        )
+        fields = ("id", "source", "destination", "distance")

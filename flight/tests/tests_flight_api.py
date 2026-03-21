@@ -1,17 +1,27 @@
 import datetime
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
+
 from flight.models import Flight
-from flight.tests.helpers import create_route, create_airplane, create_flight, create_crew, create_airport
+from flight.tests.helpers import (
+    create_airplane,
+    create_airport,
+    create_crew,
+    create_flight,
+    create_route,
+)
 from order.models import Order, Ticket
 
 FLIGHT_URL = reverse("flight:flight-list")
 
+
 def flight_detail_url(flight):
     return reverse("flight:flight-detail", args=[flight.id])
+
 
 class UnauthenticatedFlightApiTests(TestCase):
     def setUp(self):
@@ -33,7 +43,7 @@ class UnauthenticatedFlightApiTests(TestCase):
             "airplane": create_airplane().id,
             "departure_time": "2026-06-01T10:00:00Z",
             "arrival_time": "2026-06-01T12:00:00Z",
-            "base_price": "100.00"
+            "base_price": "100.00",
         }
         result_request = self.client.post(FLIGHT_URL, payload)
         self.assertEqual(result_request.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -54,7 +64,7 @@ class AuthorizedFlightApiTests(TestCase):
             "airplane": create_airplane().id,
             "departure_time": "2026-06-01T10:00:00Z",
             "arrival_time": "2026-06-01T12:00:00Z",
-            "base_price": "100.00"
+            "base_price": "100.00",
         }
         result_request = self.client.post(FLIGHT_URL, payload)
         self.assertEqual(result_request.status_code, status.HTTP_403_FORBIDDEN)
@@ -78,7 +88,7 @@ class AdminFlightApiTests(TestCase):
             "crew": [create_crew().id],
             "departure_time": "2026-06-01T10:00:00Z",
             "arrival_time": "2026-06-01T12:00:00Z",
-            "base_price": "100.00"
+            "base_price": "100.00",
         }
         flight_before = Flight.objects.count()
         result_request = self.client.post(FLIGHT_URL, payload)
@@ -93,7 +103,7 @@ class AdminFlightApiTests(TestCase):
             "crew": [create_crew().id],
             "departure_time": "2026-06-01T10:00:00Z",
             "arrival_time": "2026-06-01T12:00:00Z",
-            "base_price": "150.00"
+            "base_price": "150.00",
         }
         result_request = self.client.put(url, payload)
         self.assertEqual(result_request.status_code, status.HTTP_200_OK)
@@ -119,7 +129,6 @@ class FlightFilterApiTests(TestCase):
         self.flight1 = create_flight(route=self.route1)
         self.flight2 = create_flight(route=self.route2)
 
-
     def test_filter_flights_by_route_source(self):
         result_request = self.client.get(FLIGHT_URL, {"route__source": self.route1.id})
         flight_ids = [item["id"] for item in result_request.data["results"]]
@@ -127,7 +136,9 @@ class FlightFilterApiTests(TestCase):
         self.assertIn(self.flight1.id, flight_ids)
 
     def test_filter_flights_by_route_destination(self):
-        result_request = self.client.get(FLIGHT_URL, {"route__destination": self.destination1.id})
+        result_request = self.client.get(
+            FLIGHT_URL, {"route__destination": self.destination1.id}
+        )
         flight_ids = [item["id"] for item in result_request.data["results"]]
         self.assertNotIn(self.flight2.id, flight_ids)
         self.assertIn(self.flight1.id, flight_ids)
@@ -139,7 +150,7 @@ class FlightFilterApiTests(TestCase):
             ),
             arrival_time=datetime.datetime(
                 2025, 6, 1, 12, 0, tzinfo=datetime.timezone.utc
-            )
+            ),
         )
         future_flight = create_flight(
             departure_time=datetime.datetime(
@@ -147,9 +158,11 @@ class FlightFilterApiTests(TestCase):
             ),
             arrival_time=datetime.datetime(
                 2026, 6, 1, 12, 0, tzinfo=datetime.timezone.utc
-            )
+            ),
         )
-        result_request = self.client.get(FLIGHT_URL, {"departure_date_from": "2025-12-31"})
+        result_request = self.client.get(
+            FLIGHT_URL, {"departure_date_from": "2025-12-31"}
+        )
         ids = [item["id"] for item in result_request.data["results"]]
         self.assertIn(future_flight.id, ids)
         self.assertNotIn(past_flight.id, ids)
@@ -161,7 +174,7 @@ class FlightFilterApiTests(TestCase):
             ),
             arrival_time=datetime.datetime(
                 2025, 1, 1, 12, 0, tzinfo=datetime.timezone.utc
-            )
+            ),
         )
         future_flight = create_flight(
             departure_time=datetime.datetime(
@@ -169,9 +182,11 @@ class FlightFilterApiTests(TestCase):
             ),
             arrival_time=datetime.datetime(
                 2025, 6, 1, 12, 0, tzinfo=datetime.timezone.utc
-            )
+            ),
         )
-        result_request = self.client.get(FLIGHT_URL, {"departure_date_to": "2025-02-01"})
+        result_request = self.client.get(
+            FLIGHT_URL, {"departure_date_to": "2025-02-01"}
+        )
         ids = [item["id"] for item in result_request.data["results"]]
         self.assertIn(past_flight.id, ids)
         self.assertNotIn(future_flight.id, ids)

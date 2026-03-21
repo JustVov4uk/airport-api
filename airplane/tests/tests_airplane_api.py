@@ -1,12 +1,13 @@
 from django.contrib.auth import get_user_model
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from rest_framework import status
-from rest_framework.test import APIClient
-from airplane.models import Airplane, AirplaneType
 from rest_framework.reverse import reverse
+from rest_framework.test import APIClient
+
+from airplane.models import Airplane, AirplaneType
 
 AIRPLANE_URL = reverse("airplane:airplane-list")
+
 
 def airplane_detail_url(airplane):
     return reverse("airplane:airplane-detail", args=[airplane.id])
@@ -40,7 +41,9 @@ class UnauthenticatedAirplaneApiTests(TestCase):
             "airplane_type": self.airplane_type.id,
         }
         result_request = self.client.post(AIRPLANE_URL, payload)
-        self.assertEqual(result_request.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(result_request.status_code,
+                         status.HTTP_401_UNAUTHORIZED
+                         )
 
 
 class AuthorizedAirplaneApiTests(TestCase):
@@ -110,7 +113,9 @@ class AdminAirplaneApiTests(TestCase):
     def test_delete_airplane_admin(self):
         url = airplane_detail_url(self.airplane)
         result_request = self.client.delete(url)
-        self.assertEqual(result_request.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(result_request.status_code,
+                         status.HTTP_204_NO_CONTENT
+                         )
         self.assertFalse(Airplane.objects.filter(id=self.airplane.id).exists())
 
     def test_filter_airplanes_by_airplane_type(self):
@@ -122,7 +127,9 @@ class AdminAirplaneApiTests(TestCase):
             airplane_type=self.airplane_type_other,
         )
 
-        result_request = self.client.get(AIRPLANE_URL, {"airplane_type": self.airplane_type_other.id})
+        result_request = self.client.get(
+            AIRPLANE_URL, {"airplane_type": self.airplane_type_other.id}
+        )
         airplane_ids = [item["id"] for item in result_request.data["results"]]
         self.assertNotIn(self.airplane.id, airplane_ids)
         self.assertIn(self.airplane_other.id, airplane_ids)

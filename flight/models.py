@@ -51,7 +51,6 @@ class Flight(models.Model):
 
         occupancy = sold / capacity
 
-
         if occupancy <= 0.5:
             return self.base_price * Decimal("1.0")
         if occupancy <= 0.8:

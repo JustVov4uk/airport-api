@@ -1,12 +1,11 @@
 from django.test import TestCase
-from airplane.models import AirplaneType, Airplane
+
+from airplane.models import Airplane, AirplaneType
 
 
 class AirplaneModelTest(TestCase):
     def setUp(self):
-        self.airplane_type = AirplaneType.objects.create(
-            name="Airbus"
-        )
+        self.airplane_type = AirplaneType.objects.create(name="Airbus")
         self.airplane = Airplane.objects.create(
             name="A320",
             rows=25,

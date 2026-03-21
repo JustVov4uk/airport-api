@@ -1,6 +1,7 @@
 import time
+
 from django.core.management import BaseCommand
-from django.db import connections, InterfaceError
+from django.db import InterfaceError, connections
 from django.db.utils import OperationalError
 
 

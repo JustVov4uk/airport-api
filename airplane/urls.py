@@ -1,7 +1,7 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from airplane.views import AirplaneTypeViewSet, AirplaneViewSet
 
+from airplane.views import AirplaneTypeViewSet, AirplaneViewSet
 
 router = DefaultRouter()
 router.register("airplane_types", AirplaneTypeViewSet)

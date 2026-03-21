@@ -1,8 +1,14 @@
-from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import viewsets, filters
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import filters, viewsets
+
 from airport.models import Airport, Route
+from airport.serializers import (
+    AirportListSerializer,
+    AirportSerializer,
+    RouteListSerializer,
+    RouteSerializer,
+)
 from config.permissions import IsAdminOrReadOnly
-from airport.serializers import AirportSerializer, RouteSerializer, RouteListSerializer, AirportListSerializer
 
 
 class AirportViewSet(viewsets.ModelViewSet):
@@ -20,8 +26,6 @@ class AirportViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Airport.objects.select_related("city__country")
 
-
-    
     @extend_schema(
         summary="List all airports",
         description="Get a paginated list of all airports with search by name or closest_big_city",
@@ -32,7 +36,7 @@ class AirportViewSet(viewsets.ModelViewSet):
                 required=False,
                 type=str,
             )
-        ]
+        ],
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)

@@ -3,9 +3,11 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
-from airport.models import Airport, Country, City
+
+from airport.models import Airport, City, Country
 
 AIRPORT_URL = reverse("airport:airport-list")
+
 
 def airport_detail_url(airport):
     return reverse("airport:airport-detail", args=[airport.id])

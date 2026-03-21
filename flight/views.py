@@ -1,30 +1,32 @@
 import django_filters
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from django.db.models import Count, ExpressionWrapper, F, IntegerField
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import filters, viewsets
 from rest_framework.decorators import action
-from django.db.models import F, Count, ExpressionWrapper, IntegerField
-from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
+
 from config.permissions import IsAdminOrReadOnly
 from flight.models import Crew, Flight
-from flight.serializers import (CrewSerializer,
-                                FlightSerializer,
-                                FlightListSerializer,
-                                FlightDetailSerializer
-                                )
+from flight.serializers import (
+    CrewSerializer,
+    FlightDetailSerializer,
+    FlightListSerializer,
+    FlightSerializer,
+)
 from order.models import Ticket
 
 
 class FlightFilter(django_filters.FilterSet):
     departure_date_from = django_filters.DateFilter(
-        field_name="departure_time",
-        lookup_expr="gte"
+        field_name="departure_time", lookup_expr="gte"
     )
     departure_date_to = django_filters.DateFilter(
-        field_name="departure_time",
-        lookup_expr="lte"
+        field_name="departure_time", lookup_expr="lte"
     )
-    has_available_seats = django_filters.BooleanFilter(method="filter_has_available_seats")
+    has_available_seats = django_filters.BooleanFilter(
+        method="filter_has_available_seats"
+    )
 
     class Meta:
         model = Flight
@@ -51,9 +53,9 @@ class CrewViewSet(viewsets.ModelViewSet):
                 name="search",
                 description="Search by first name or last name",
                 required=False,
-                type=str
+                type=str,
             )
-        ]
+        ],
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
@@ -83,15 +85,14 @@ class FlightViewSet(viewsets.ModelViewSet):
                 "airplane__airplane_type",
             ).annotate(
                 available_seats=ExpressionWrapper(
-                    F("airplane__rows") * F("airplane__seats_in_row") - Count("tickets"),
-                    output_field=IntegerField()
+                    F("airplane__rows") * F("airplane__seats_in_row")
+                    - Count("tickets"),
+                    output_field=IntegerField(),
                 )
             )
         if self.action == "retrieve":
             queryset = queryset.select_related(
-                "route__source",
-                "route__destination",
-                "airplane__airplane_type"
+                "route__source", "route__destination", "airplane__airplane_type"
             ).prefetch_related("crew")
 
         return queryset
@@ -107,10 +108,10 @@ class FlightViewSet(viewsets.ModelViewSet):
                     "properties": {
                         "row": {"type": "integer"},
                         "seat": {"type": "integer"},
-                    }
-                }
+                    },
+                },
             }
-        }
+        },
     )
     @action(
         methods=["GET"],
@@ -149,48 +150,46 @@ class FlightViewSet(viewsets.ModelViewSet):
                 name="route__source",
                 description="Filter flights by source airport ID",
                 required=False,
-                type=int
+                type=int,
             ),
             OpenApiParameter(
                 name="route__destination",
                 description="Filter flights by destination airport ID",
                 required=False,
-                type=int
+                type=int,
             ),
             OpenApiParameter(
                 name="departure_date_from",
                 description="Filter flights departing on or after this date (format: YYYY-MM-DD)",
                 required=False,
-                type=str
+                type=str,
             ),
             OpenApiParameter(
                 name="departure_date_to",
                 description="Filter flights departing on or before this date (format: YYYY-MM-DD)",
                 required=False,
-                type=str
+                type=str,
             ),
             OpenApiParameter(
                 name="has_available_seats",
                 description="Show only flights with available seats (True/False)",
                 required=False,
-                type=bool
+                type=bool,
             ),
             OpenApiParameter(
                 name="ordering",
                 description="Order results by field. Prefix with '-' for descending order (e.g., '-departure_time')",
                 required=False,
-                type=str
+                type=str,
             ),
             OpenApiParameter(
                 name="page",
                 description="Page number for pagination",
                 required=False,
-                type=int
-            )
-        ]
+                type=int,
+            ),
+        ],
     )
-
-
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -198,9 +197,8 @@ class FlightViewSet(viewsets.ModelViewSet):
         methods=["GET"],
         detail=True,
         url_path="occupancy",
-        permission_classes=[IsAdminUser]
+        permission_classes=[IsAdminUser],
     )
-
     def occupancy(self, request, pk=None):
         flight = self.get_object()
         if flight.airplane.capacity == 0:

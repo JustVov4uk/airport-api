@@ -16,7 +16,8 @@ class Migration(migrations.Migration):
             model_name="airplane",
             name="airplane_type",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.PROTECT, to="airplane.airplanetype"
+                on_delete=django.db.models.deletion.PROTECT,
+                to="airplane.airplanetype"
             ),
         ),
         migrations.AlterField(
