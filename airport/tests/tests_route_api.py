@@ -8,6 +8,7 @@ from airport.models import Airport, City, Country, Route
 
 ROUTE_URL = reverse("airport:route-list")
 
+User = get_user_model()
 
 def route_detail_url(route):
     return reverse("airport:route-detail", args=[route.id])
@@ -52,7 +53,7 @@ class UnauthenticatedRouteApiTests(TestCase):
 class AuthorizedRouteApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
+        self.user = User.objects.create_user(
             email="EMAIL", password="PASSWORD"
         )
         self.client.force_authenticate(user=self.user)
@@ -92,7 +93,7 @@ class AuthorizedRouteApiTests(TestCase):
 class AdminRouteApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
+        self.user = User.objects.create_user(
             email="EMAIL",
             password="PASSWORD",
             is_staff=True,

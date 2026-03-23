@@ -9,6 +9,7 @@ from order.models import Order
 
 ORDER_URL = reverse("order:order-list")
 
+User = get_user_model()
 
 def order_detail_url(order_id):
     return reverse("order:order-detail", args=[order_id])
@@ -27,11 +28,11 @@ class UnauthenticatedOrderApiTests(TestCase):
 class AuthorizedOrderApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user1 = get_user_model().objects.create_user(
+        self.user1 = User.objects.create_user(
             email="EMAIL",
             password="PASSWORD",
         )
-        self.user2 = get_user_model().objects.create_user(
+        self.user2 = User.objects.create_user(
             email="EMAIL2",
             password="PASSWORD",
         )
@@ -67,15 +68,15 @@ class AuthorizedOrderApiTests(TestCase):
 class AdminOrderApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user1 = get_user_model().objects.create_user(
+        self.user1 = User.objects.create_user(
             email="EMAIL",
             password="PASSWORD",
         )
-        self.user2 = get_user_model().objects.create_user(
+        self.user2 = User.objects.create_user(
             email="EMAIL2",
             password="PASSWORD",
         )
-        self.admin = get_user_model().objects.create_user(
+        self.admin = User.objects.create_user(
             email="admin",
             password="PASSWORD",
             is_staff=True,

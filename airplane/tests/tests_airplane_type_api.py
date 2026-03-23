@@ -8,6 +8,7 @@ from airplane.models import AirplaneType
 
 AIRPLANE_TYPE_URL = reverse("airplane:airplanetype-list")
 
+User = get_user_model()
 
 def airplane_type_detail_url(airplane_type):
     return reverse("airplane:airplanetype-detail", args={airplane_type.id})
@@ -42,7 +43,7 @@ class UnauthenticatedAirplaneTypeAPITest(TestCase):
 class AuthorizedAirplaneTypeAPITest(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
+        self.user = User.objects.create_user(
             email="EMAIL",
             password="PASSWORD",
         )
@@ -62,7 +63,7 @@ class AuthorizedAirplaneTypeAPITest(TestCase):
 class AdminAirplaneTypeAPITest(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
+        self.user = User.objects.create_user(
             email="EMAIL",
             password="PASSWORD",
             is_staff=True,

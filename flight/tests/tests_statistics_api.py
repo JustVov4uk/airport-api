@@ -6,11 +6,12 @@ from rest_framework.test import APIClient
 
 STATISTIC_URL = reverse("statistics")
 
+User = get_user_model()
 
 class StatisticsApiTest(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.admin = get_user_model().objects.create_user(
+        self.admin = User.objects.create_user(
             email="admin@gmail.com",
             password="PASSWORD",
             is_staff=True,
@@ -26,7 +27,7 @@ class StatisticsApiTest(TestCase):
         self.assertIn("total_passengers", result.data)
 
     def test_statistics_forbidden_for_user(self):
-        self.user = get_user_model().objects.create_user(
+        self.user = User.objects.create_user(
             email="user@email.com",
             password="PASSWORD",
         )

@@ -18,6 +18,7 @@ from order.models import Order, Ticket
 
 FLIGHT_URL = reverse("flight:flight-list")
 
+User = get_user_model()
 
 def flight_detail_url(flight):
     return reverse("flight:flight-detail", args=[flight.id])
@@ -52,7 +53,7 @@ class UnauthenticatedFlightApiTests(TestCase):
 class AuthorizedFlightApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
+        self.user = User.objects.create_user(
             email="EMAIL",
             password="PASSWORD",
         )
@@ -73,7 +74,7 @@ class AuthorizedFlightApiTests(TestCase):
 class AdminFlightApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
+        self.user = User.objects.create_user(
             email="EMAIL",
             password="PASSWORD",
             is_staff=True,
@@ -196,7 +197,7 @@ class FlightFilterApiTests(TestCase):
     def test_filter_has_available_seats(self):
         full_airplane = create_airplane(rows=1, seats_in_row=1)
         full_flight = create_flight(airplane=full_airplane)
-        user = get_user_model().objects.create_user(
+        user = User.objects.create_user(
             email="EMAIL",
             password="PASSWORD",
         )
@@ -230,7 +231,7 @@ class FlightActionApiTests(TestCase):
         self.assertTrue(len(result.data) > 0)
 
     def test_available_seats_excludes_taken(self):
-        user = get_user_model().objects.create_user(
+        user = User.objects.create_user(
             email="EMAIL",
             password="PASSWORD",
         )
@@ -248,7 +249,7 @@ class FlightActionApiTests(TestCase):
         self.assertNotIn({"row": 1, "seat": 1}, result.data)
 
     def test_occupancy_admin(self):
-        admin = get_user_model().objects.create_user(
+        admin = User.objects.create_user(
             email="EMAIL",
             password="PASSWORD",
             is_staff=True,
@@ -257,7 +258,7 @@ class FlightActionApiTests(TestCase):
 
         airplane = create_airplane(rows=10, seats_in_row=1)
         flight = create_flight(airplane=airplane)
-        user = get_user_model().objects.create_user(
+        user = User.objects.create_user(
             email="user@email",
             password="pass",
         )
@@ -276,7 +277,7 @@ class FlightActionApiTests(TestCase):
         self.assertEqual(result.data["occupancy"], 10.0)
 
     def test_occupancy_forbidden_for_user(self):
-        user = get_user_model().objects.create_user(
+        user = User.objects.create_user(
             email="EMAIL",
             password="PASSWORD",
         )

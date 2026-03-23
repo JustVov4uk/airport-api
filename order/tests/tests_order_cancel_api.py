@@ -12,11 +12,12 @@ from order.models import Order, Ticket
 
 ORDER_CANCEL_URL = reverse("order:order-cancel", args=[id])
 
+User = get_user_model()
 
 class OrderCancelApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
+        self.user = User.objects.create_user(
             email="user@gmail.com",
             password="PASSWORD",
         )
