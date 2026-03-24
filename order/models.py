@@ -1,0 +1,64 @@
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
+from django.db import models
+
+from flight.models import Flight
+
+
+class Order(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = "orders"
+
+    def __str__(self):
+        return f"{self.created_at}"
+
+
+class Ticket(models.Model):
+    row = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    seat = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    flight = models.ForeignKey(Flight, on_delete=models.CASCADE, related_name="tickets")
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+
+    class Meta:
+        verbose_name_plural = "tickets"
+        unique_together = ("flight", "row", "seat")
+        ordering = ("seat",)
+
+    def __str__(self):
+        return f"{self.row}-{self.seat}"
+
+    @staticmethod
+    def validate_ticket_field(
+        value: int, max_value: int, field_name: str, error_to_raise
+    ):
+        if not (1 <= value <= max_value):
+            raise error_to_raise(
+                {
+                    field_name: f"{field_name} must be in range [1, {max_value}], not {value}"
+                }
+            )
+
+    def clean(self):
+        Ticket.validate_ticket_field(
+            self.seat, self.flight.airplane.seats_in_row, "seat", ValidationError
+        )
+        Ticket.validate_ticket_field(
+            self.row, self.flight.airplane.rows, "row", ValidationError
+        )
+
+    def save(
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+    ):
+        self.clean()
+        return super(Ticket, self).save(
+            force_insert, force_update, using, update_fields
+        )

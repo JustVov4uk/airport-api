@@ -1,3 +1,9 @@
 .venv/
-__py_cache__/
+__pycache__/
 .idea/
+db.sqlite3
+*.pyc
+logs/
+*.log
+.coverage
+.env
