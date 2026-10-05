@@ -42,7 +42,6 @@ class AuthorizedOrderApiTests(TestCase):
         flight = create_flight()
         payload = {"tickets": [{"flight": flight.id, "row": 1, "seat": 1}]}
         result = self.client.post(ORDER_URL, payload, format="json")
-        print(result.data)
         self.assertEqual(result.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Order.objects.filter(user=self.user1).exists())
 

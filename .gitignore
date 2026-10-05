@@ -2,8 +2,12 @@
 __pycache__/
 .idea/
 db.sqlite3
+*.sqlite3
 *.pyc
 logs/
 *.log
 .coverage
+htmlcov/
+.pytest_cache/
 .env
+media/

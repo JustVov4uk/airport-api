@@ -1,6 +1,6 @@
 # ✈️ Airport API
 
-A production-ready RESTful API service for airport management built with Django REST Framework. The system enables users to search flights, book tickets, and allows administrators to manage the entire airport infrastructure.
+A RESTful API service for airport management built with Django REST Framework. The system enables users to search flights, book tickets, and allows administrators to manage the airport infrastructure.
 
 ---
 
@@ -30,7 +30,7 @@ A production-ready RESTful API service for airport management built with Django 
 - **Analytics endpoints** — flight occupancy %, global statistics (admin only)
 - **Image upload** — airplane photos via dedicated endpoint
 - **API documentation** — Swagger UI and ReDoc
-- **Pagination, throttling, CORS** — production-ready configuration
+- **Pagination, throttling, CORS** — environment-based configuration
 
 ---
 
@@ -76,6 +76,7 @@ POSTGRES_PASSWORD=your_password
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
 SECRET_KEY=your_secret_key
+DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 

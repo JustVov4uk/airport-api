@@ -2,5 +2,12 @@
 __pycache__/
 *.pyc
 .idea
+.git
+.env
+.coverage
+htmlcov/
+.pytest_cache/
+logs/
+media/
 Dockerfile
 docker-compose.yaml

@@ -13,7 +13,6 @@ from order.serializers import (
     OrderListSerializer,
     OrderSerializer,
     TicketListSerializer,
-    TicketSerializer,
 )
 
 
@@ -93,9 +92,9 @@ class OrderViewSet(viewsets.ModelViewSet):
         return OrderSerializer
 
 
-class TicketViewSet(viewsets.ModelViewSet):
+class TicketViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ticket.objects.all()
-    serializer_class = TicketSerializer
+    serializer_class = TicketListSerializer
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
@@ -105,11 +104,7 @@ class TicketViewSet(viewsets.ModelViewSet):
         else:
             queryset = Ticket.objects.filter(order__user=user.id)
         return queryset.select_related(
+            "order",
             "flight__route__source",
             "flight__route__destination",
         )
-
-    def get_serializer_class(self):
-        if self.action in ["list", "retrieve"]:
-            return TicketListSerializer
-        return TicketSerializer

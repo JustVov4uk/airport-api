@@ -10,10 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-import os
-from email.policy import default
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,8 +22,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = config("DEBUG", default=True, cast=bool)
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-key-for-dev")
+SECRET_KEY = config("SECRET_KEY", default="")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "fallback-key-for-dev"
+    else:
+        raise ImproperlyConfigured("SECRET_KEY environment variable is required")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -52,10 +59,11 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost").split(",")
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in config("ALLOWED_HOSTS", default="localhost").split(",")
+    if host.strip()
+]
 
 
 # Application definition
@@ -71,7 +79,6 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     "corsheaders",
-    "debug_toolbar",
     "config",
     "airport",
     "airplane",
@@ -85,7 +92,6 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -161,11 +167,14 @@ USE_I18N = True
 
 USE_TZ = True
 
-INTERNAL_IPS = [
-    "127.0.0.1",
-]
-
 AUTH_USER_MODEL = "user.User"
+
+if DEBUG:
+    INSTALLED_APPS.append("debug_toolbar")
+    MIDDLEWARE.insert(3, "debug_toolbar.middleware.DebugToolbarMiddleware")
+    INTERNAL_IPS = [
+        "127.0.0.1",
+    ]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -179,6 +188,9 @@ MEDIA_URL = "/media/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+LOGS_DIR = BASE_DIR / "logs"
+LOGS_DIR.mkdir(exist_ok=True)
 
 LOGGING = {
     "version": 1,
@@ -197,7 +209,7 @@ LOGGING = {
         "file": {
             "level": "WARNING",
             "class": "logging.FileHandler",
-            "filename": BASE_DIR / "logs/django.log",
+            "filename": LOGS_DIR / "django.log",
             "formatter": "verbose",
         },
         "console": {
