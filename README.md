@@ -45,6 +45,7 @@ airport-api/
 ├── user/           # Custom User model (email-based auth)
 ├── core/           # Management commands (wait_for_db)
 ├── config/         # Django settings, URLs, permissions
+├── frontend/       # React demo client
 ├── Dockerfile
 ├── docker-compose.yaml
 └── .env.example
@@ -86,7 +87,8 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 docker-compose up --build
 ```
 
-The API will be available at `http://localhost:8000`
+The API will be available at `http://localhost:8000`.
+The React frontend will be available at `http://localhost:3000`.
 
 ### 4. Create superuser
 
@@ -94,7 +96,16 @@ The API will be available at `http://localhost:8000`
 docker-compose exec app python manage.py createsuperuser
 ```
 
+For a quick local demo account:
+
+```bash
+docker-compose exec -e DJANGO_SUPERUSER_PASSWORD=Admin12345! app python manage.py createsuperuser --email admin@example.com --noinput
+```
+
 ### 5. Populate database with test data (optional)
+
+Docker Compose runs migrations and `populate_db` automatically on startup. To run it manually:
+
 ```bash
 docker-compose exec app python manage.py populate_db
 ```
@@ -106,13 +117,21 @@ This creates sample countries, cities, airports, airplanes, crew members, routes
 
 The repository includes a React demo client in `frontend/`.
 
+The frontend starts together with the backend when using Docker Compose:
+
+```bash
+docker-compose up --build
+```
+
+The frontend runs on `http://localhost:3000` and uses `http://localhost:8000/api` by default.
+
+To run it manually without Docker:
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-
-The frontend runs on `http://localhost:3000` and uses `http://localhost:8000/api` by default.
 
 You can override the backend URL in `frontend/.env`:
 

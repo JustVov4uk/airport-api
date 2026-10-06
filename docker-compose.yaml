@@ -17,6 +17,15 @@ services:
     depends_on:
       - db
 
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - app
 
   db:
     image: postgres:16-alpine
@@ -27,7 +36,6 @@ services:
       - "5433:5432"
     volumes:
       - my_db:/var/lib/postgresql/data
-
 
 volumes:
   my_db:
