@@ -43,6 +43,17 @@ function formatMoney(value) {
   }).format(Number(value));
 }
 
+function getShortTime(value) {
+  if (!value) {
+    return "--:--";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 function getAirportLabel(airport) {
   if (!airport) {
     return "Unknown airport";
@@ -76,12 +87,38 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const selectedAvailableSeats = useMemo(() => {
     return new Set(availableSeats.map((seat) => `${seat.row}-${seat.seat}`));
   }, [availableSeats]);
+
+  const dashboard = useMemo(() => {
+    const availableSeatCount = flights.reduce((sum, flight) => {
+      return sum + Number(flight.available_seats || 0);
+    }, 0);
+
+    const nextFlight = [...flights]
+      .filter((flight) => flight.departure_time)
+      .sort((a, b) => new Date(a.departure_time) - new Date(b.departure_time))[0];
+
+    const selectedCapacity = selectedFlight?.airplane?.capacity || 0;
+    const selectedAvailable = availableSeats.length;
+    const selectedBooked = Math.max(selectedCapacity - selectedAvailable, 0);
+    const selectedLoad = selectedCapacity
+      ? Math.round((selectedBooked / selectedCapacity) * 100)
+      : 0;
+
+    return {
+      availableSeatCount,
+      nextFlight,
+      orderCount: orders.length,
+      selectedLoad,
+    };
+  }, [availableSeats.length, flights, orders.length, selectedFlight]);
 
   const loadFlights = async (nextFilters = filters) => {
     setLoading(true);
@@ -91,6 +128,7 @@ function App() {
       const data = await fetchFlights(nextFilters);
       setFlights(data.results);
       setFlightCount(data.count);
+      setLastUpdated(new Date());
 
       if (data.results.length && !selectedFlightId) {
         setSelectedFlightId(data.results[0].id);
@@ -132,6 +170,7 @@ function App() {
         setAirports(airportList);
         setFlights(flightData.results);
         setFlightCount(flightData.count);
+        setLastUpdated(new Date());
 
         if (flightData.results.length) {
           setSelectedFlightId(flightData.results[0].id);
@@ -179,6 +218,26 @@ function App() {
     loadOrders(token);
   }, [token]);
 
+  useEffect(() => {
+    if (!autoRefresh) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      loadFlights(filters);
+      if (token) {
+        loadOrders(token);
+      }
+      if (selectedFlightId) {
+        fetchAvailableSeats(selectedFlightId)
+          .then(setAvailableSeats)
+          .catch((err) => setError(err.message));
+      }
+    }, 30000);
+
+    return () => window.clearInterval(intervalId);
+  }, [autoRefresh, filters, selectedFlightId, token]);
+
   const handleFilterChange = (event) => {
     setFilters((current) => ({
       ...current,
@@ -198,6 +257,24 @@ function App() {
     setSelectedFlightId(null);
     setSelectedFlight(null);
     loadFlights(initialFilters);
+  };
+
+  const handleRefresh = async () => {
+    setMessage("");
+    setError("");
+
+    try {
+      await Promise.all([
+        loadFlights(filters),
+        token ? loadOrders(token) : null,
+        selectedFlightId
+          ? fetchAvailableSeats(selectedFlightId).then(setAvailableSeats)
+          : null,
+      ]);
+      setMessage("Board refreshed.");
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   const handleLogin = async (event) => {
@@ -342,6 +419,53 @@ function App() {
         </div>
       )}
 
+      <section className="insight-grid">
+        <article className="insight-card insight-card-primary">
+          <span>Flights loaded</span>
+          <strong>{flightCount}</strong>
+          <small>{loading ? "Updating board" : "Current search result"}</small>
+        </article>
+
+        <article className="insight-card">
+          <span>Available seats</span>
+          <strong>{dashboard.availableSeatCount}</strong>
+          <small>Across visible flights</small>
+        </article>
+
+        <article className="insight-card">
+          <span>Next departure</span>
+          <strong>{getShortTime(dashboard.nextFlight?.departure_time)}</strong>
+          <small>
+            {dashboard.nextFlight
+              ? getRouteLabel(dashboard.nextFlight.route)
+              : "No flight selected"}
+          </small>
+        </article>
+
+        <article className="insight-card">
+          <span>Selected load</span>
+          <strong>{dashboard.selectedLoad}%</strong>
+          <small>{orders.length ? `${dashboard.orderCount} active orders` : "No bookings yet"}</small>
+        </article>
+      </section>
+
+      <div className="board-controls">
+        <button type="button" onClick={handleRefresh}>
+          Refresh board
+        </button>
+        <label className="switch-control">
+          <input
+            checked={autoRefresh}
+            type="checkbox"
+            onChange={(event) => setAutoRefresh(event.target.checked)}
+          />
+          <span>Auto refresh</span>
+        </label>
+        <span>
+          Updated {lastUpdated ? getShortTime(lastUpdated) : "after first load"}
+        </span>
+      </div>
+
       <main className="workspace">
         <section className="panel search-panel">
           <div className="section-heading">
@@ -425,6 +549,27 @@ function App() {
             </div>
           </form>
 
+          <div className="live-board">
+            <div className="live-board-header">
+              <span>Live board</span>
+              <strong>{flights.length ? "Departures" : "Waiting for data"}</strong>
+            </div>
+
+            {flights.slice(0, 5).map((flight) => (
+              <button
+                className="board-row"
+                key={flight.id}
+                type="button"
+                onClick={() => setSelectedFlightId(flight.id)}
+              >
+                <span className="status-dot" />
+                <span>{getShortTime(flight.departure_time)}</span>
+                <strong>{getRouteLabel(flight.route)}</strong>
+                <span>{flight.available_seats} seats</span>
+              </button>
+            ))}
+          </div>
+
           <div className="flight-list" aria-busy={loading}>
             {loading && <div className="empty-state">Loading flights...</div>}
 
@@ -497,10 +642,29 @@ function App() {
                 </div>
               </div>
 
+              <div className="route-visual">
+                <div>
+                  <span>{getAirportLabel(selectedFlight.route?.source)}</span>
+                  <strong>{getShortTime(selectedFlight.departure_time)}</strong>
+                </div>
+                <div className="route-line">
+                  <span className="route-plane" />
+                </div>
+                <div>
+                  <span>{getAirportLabel(selectedFlight.route?.destination)}</span>
+                  <strong>{getShortTime(selectedFlight.arrival_time)}</strong>
+                </div>
+              </div>
+
               <div className="seat-toolbar">
                 <div>
                   <p className="eyebrow">Seat map</p>
                   <strong>{availableSeats.length} available</strong>
+                </div>
+                <div className="seat-legend">
+                  <span><i className="legend-open" /> Open</span>
+                  <span><i className="legend-selected" /> Selected</span>
+                  <span><i className="legend-booked" /> Booked</span>
                 </div>
                 <button
                   type="button"
