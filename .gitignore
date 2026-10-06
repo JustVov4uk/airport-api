@@ -11,3 +11,7 @@ htmlcov/
 .pytest_cache/
 .env
 media/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.npm-cache/

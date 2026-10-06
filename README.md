@@ -99,6 +99,29 @@ docker-compose exec app python manage.py createsuperuser
 docker-compose exec app python manage.py populate_db
 ```
 This creates sample countries, cities, airports, airplanes, crew members, routes and flights.
+
+---
+
+## 🖥️ React Demo Frontend
+
+The repository includes a React demo client in `frontend/`.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend runs on `http://localhost:3000` and uses `http://localhost:8000/api` by default.
+
+You can override the backend URL in `frontend/.env`:
+
+```env
+VITE_API_BASE_URL=http://localhost:8000/api
+```
+
+Main demo flow: search flights, open flight details, sign in with JWT, choose an available seat, create an order and review booked tickets.
+
 ---
 
 ## 🔌 API Endpoints
